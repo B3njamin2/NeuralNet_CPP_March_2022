@@ -32,7 +32,7 @@ To use the neural network, follow these steps:
 
 ---MINSTdataset---
 
-setlearning 0.05   | setConstant(0.5) | layout 784, 128, 64, 10
+setlearning 0.05   | setConstant(0.5) | layout 784, 128, 64, 10 \
 setlearning 0.05   | setConstant(0.5) | layout 784, 128, 64, 32, 10
 
 ---trainingAllGates.txt---
