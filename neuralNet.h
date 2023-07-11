@@ -8,11 +8,17 @@
 #include <fstream>
 #include <sstream>
 #include <iomanip>
+#include <thread>
+
 
 std::mt19937 gen(time(0));
 std::normal_distribution<double> dis(0, 1);
+std::vector<std::vector<double>> readMNISTImages(const std::string &);
+std::vector<int> readMNISTLabels(const std::string &);
+void updateGraph(const std::vector<double>& costValues, const std::vector<int>& epochs);
 
-// Each the class node owns the weights connected directly infront
+
+// Each the class node owns the weights connected directly in front
 class Node
 {
     double output;
@@ -289,6 +295,98 @@ public:
         outFile.close();
     }
 
+    void trainMINST(std::string imageMINST, std::string labelsMINST, std::string OutputFileName, int numEpochs, int outputData = 0)
+    {
+        if (numEpochs < 0)
+            throw std::runtime_error("NumEpochs cannot be negative");
+
+        std::ofstream outFile(OutputFileName, std::ios::out);
+        if (!outFile.is_open())
+            throw std::runtime_error("OutputFile could not be opened/found");
+
+        outFile << "Epoch | targets : outputs | cost function" << std::endl;
+
+        // MNIST dataset configuration
+        int inputSize = 784; // 28x28 input images
+        int outputSize = 10; // 10 possible digits (0-9)
+
+        std::vector<std::vector<double>> images = readMNISTImages(imageMINST);
+        std::vector<int> labels = readMNISTLabels(labelsMINST);
+
+        std::uniform_int_distribution<> disUn(0, images.size() - 1);
+     
+        int epoch = 0;
+        while (epoch < numEpochs)
+        {
+            epoch++;
+            
+
+            int index = disUn(gen);
+
+            int label = labels[index];
+
+            std::vector<double> targets(outputSize, 0.0);
+            targets[label] = 1.0;
+
+
+            forwardProp(images[index]);
+            std::vector<double> outputs = getOutput();
+
+            if (outputData)
+            {
+                exportWeights("weightData.txt");
+                exportNodeInfo("nodeInfo.txt");
+            }
+            backProp(targets);
+
+
+            if( numEpochs-epoch < 30 ){
+                
+                outFile << std::endl;
+            
+                for (int i = 0; i < 784; i++)
+                {
+                    char pixelChar;
+                    if (images[index][i] > 0.5)
+                    {
+                        pixelChar = '#';
+                    }
+                    else if (images[index][i] > 0.3)
+                    {
+                        pixelChar = '.';
+                    }
+                    else
+                    {
+                        pixelChar = ' ';
+                    }
+                    outFile << pixelChar;
+
+                    if ((i + 1) % 28 == 0)
+                    {
+                        outFile << std::endl;
+                    }
+                }
+
+                outFile << std::endl; 
+            }
+            
+
+            outFile << std::left << std::setw(6) << epoch << "| ";
+
+            for (double num : targets)
+                outFile << std::setw(3) << num << " ";
+
+            outFile << "  :  " << std::setprecision(4) << std::fixed;
+
+            for (double num : outputs)
+                outFile << std::setw(10) << num << " ";
+
+            outFile << " | " << std::setprecision(7) << costFunction(outputs, targets) << std::endl
+                    << std::resetiosflags(std::ios::fixed);
+        }
+        
+    }
+
     void test()
     {
         int inputSize = layerArr[0].size();
@@ -323,6 +421,7 @@ public:
     virtual double randWeight(int) = 0;
     virtual double derivedActivation(double) = 0;
 };
+
 // activation functions
 class LeakyRelu : public NeuralNet
 {
@@ -392,3 +491,91 @@ public:
         return dis(gen) * sqrt(1.0 / numOfNodesBefore);
     }
 };
+
+// read MNIST
+//  Function to read MNIST images
+
+uint32_t swapEndianness(uint32_t value)
+{
+    return ((value & 0xFF) << 24) |
+           ((value & 0xFF00) << 8) |
+           ((value & 0xFF0000) >> 8) |
+           ((value & 0xFF000000) >> 24);
+}
+
+std::vector<std::vector<double>> readMNISTImages(const std::string &filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to open MNIST image file: " + filename);
+    }
+
+    // Read the magic number and other metadata
+    uint32_t magicNumber, numImages, numRows, numCols;
+    file.read(reinterpret_cast<char *>(&magicNumber), 4);
+    file.read(reinterpret_cast<char *>(&numImages), 4);
+    file.read(reinterpret_cast<char *>(&numRows), 4);
+    file.read(reinterpret_cast<char *>(&numCols), 4);
+    magicNumber = swapEndianness(magicNumber);
+    numImages = swapEndianness(numImages);
+    numRows = swapEndianness(numRows);
+    numCols = swapEndianness(numCols);
+
+    // Check if the file format is correct
+    if (magicNumber != 0x00000803)
+    {
+        throw std::runtime_error("Invalid MNIST image file format: " + filename + std::to_string(magicNumber));
+    }
+
+    // Read the image data
+    std::vector<std::vector<double>> images(numImages, std::vector<double>(numRows * numCols));
+    for (int i = 0; i < numImages; ++i)
+    {
+        for (int j = 0; j < numRows * numCols; ++j)
+        {
+            unsigned char pixel;
+            file.read(reinterpret_cast<char *>(&pixel), 1);
+            images[i][j] = static_cast<double>(pixel) / 255.0; // Normalize pixel values to [0, 1]
+        }
+    }
+
+    return images;
+}
+
+// Function to read MNIST labels
+std::vector<int> readMNISTLabels(const std::string &filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Failed to open MNIST label file: " + filename);
+    }
+
+    // Read the magic number and other metadata
+    int magicNumber, numLabels;
+    file.read(reinterpret_cast<char *>(&magicNumber), 4);
+    file.read(reinterpret_cast<char *>(&numLabels), 4);
+    magicNumber = swapEndianness(magicNumber);
+    numLabels = swapEndianness(numLabels);
+
+    // Check if the file format is correct
+    if (magicNumber != 0x00000801)
+    {
+        throw std::runtime_error("Invalid MNIST label file format: " + filename);
+    }
+
+    // Read the label data
+    std::vector<int> labels(numLabels);
+    for (int i = 0; i < numLabels; ++i)
+    {
+        unsigned char label;
+        file.read(reinterpret_cast<char *>(&label), 1);
+        labels[i] = static_cast<int>(label);
+    }
+
+    return labels;
+}
+
+
+
