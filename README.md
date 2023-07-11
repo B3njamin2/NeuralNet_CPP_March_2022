@@ -27,20 +27,20 @@ To use the neural network, follow these steps:
 5. Train the network by providing a training file and specifying whether to export weight and node data along with prediction results. For example, `net.readandTrain("trainingAllGates.txt", "_outputDataAllGates.txt", 0);` reads the training data from "trainingAllGates.txt", performs training, and only exports prediction results.
 
 6. Optionally, you can test the neural network by providing inputs through the terminal and verifying the outputs using `net.test();`.
-7. 
+ 
 ## Settings that Works!!
 
 ---trainingAllGates.txt---
 
-leakyRelu setlearning 0.2   | setConstant(0.5) | layout 2,8,4 
-sigmoid   setlearning 10-1  | layout 2,(4-8),4
-Tanh      setlearning 0.1   | layout 2,8,4
+leakyRelu setlearning 0.2   | setConstant(0.5) | layout 2,8,4 \
+sigmoid   setlearning 10-1  | layout 2,(4-8),4 \
+Tanh      setlearning 0.1   | layout 2,8,4 \
 
 ---Training with individual gates---
 
-leakyRelu learning rate = 0.1 | setConstant(0.1) | layout 2,3,1
-sigmoid   learning rate = 1   | layout 2,4,1 
-Tanh      learning rate = 0.1 | layout 2,3,3,1
+leakyRelu learning rate = 0.1 | setConstant(0.1) | layout 2,3,1 \
+sigmoid   learning rate = 1   | layout 2,4,1 \
+Tanh      learning rate = 0.1 | layout 2,3,3,1 \
 
 ## Available Functions
 
