@@ -2,14 +2,6 @@
 
 This project involves building a fully connected neural network with different activation functions from scratch using various libraries such as vector, file processing, random, string, stream, and cmath. The neural network is designed to handle different sizes of input, output, and hidden layers, and supports class inheritance for using different activation functions like LeakyRelu, Sigmoid, and Tanh.
 
-## Core Competencies
-
-The core competencies of this project include:
-
-- Researching and understanding neural network concepts
-- Problem assessment and analysis for designing the neural network
-- Implementing various functionalities such as weight initialization, forward and back propagation using gradient descent, and import/export of file information
-
 ## Getting Started
 
 To use the neural network, follow these steps:
