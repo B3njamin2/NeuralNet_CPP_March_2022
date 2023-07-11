@@ -40,7 +40,7 @@ Tanh      setlearning 0.1   | layout 2,8,4
 
 leakyRelu learning rate = 0.1 | setConstant(0.1) | layout 2,3,1
 sigmoid   learning rate = 1   | layout 2,4,1 
-Tanh      learning rate = 0.1 | layout 2,3,3,1   
+Tanh      learning rate = 0.1 | layout 2,3,3,1
 
 ## Available Functions
 
