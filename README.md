@@ -44,7 +44,7 @@ The following functions are available for interacting with the neural network:
 - `void readandTrain(std::string trainingFile, std::string OutputFileName, int outputData)`: Reads the training data from a file, performs training, and exports results based on the specified options.
 - `void test()`: Allows testing the neural network by providing inputs through the terminal and verifying the outputs.
 
-##Testing and Troubleshooting
+## Testing and Troubleshooting
 The program includes multiple pre-existing training data files that can be used for testing. However, you can also test the neural network with your own training data as long as it is in a TXT file. Ensure that the inputs and targets are separated by a space, and each epoch's data is on a new line. The program validates the input and target sizes against the neural network to ensure compatibility.
 
 In case of issues with exploding or vanishing gradients, it is recommended to rerun the program as random weight initialization can sometimes cause such problems.
